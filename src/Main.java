@@ -2,9 +2,14 @@ import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) {
-        System.out.println("Введите текст и нажмите <Enter>: ");
-        String text = new Scanner(System.in).nextLine();
-        System.out.println("Длина текста: " + text.length());
+        System.out.println("Введите первое число:");
+        int number1 = new Scanner(System.in).nextInt();
+        System.out.println("Введите второе число:");
+        int number2 = new Scanner(System.in).nextInt();
+        System.out.println("Cумма чисел: " + (number1+number2));
+        System.out.println("Разность чисел: " + (number1-number2));
+        System.out.println("Произведение чисел: " + (number1*number2));
+        System.out.println("Частное чисел : " + ((double)number1/number2));
     }
 }
 
