@@ -5,6 +5,8 @@ public class UserAgent {
     final String useragent;
     final String os;
     final String browser;
+    private boolean isBot;
+
     public UserAgent(String useragent) {
         String temp = "";
         String tempBrowser = "";
@@ -63,6 +65,10 @@ public class UserAgent {
 
     public String getBrowser() {
         return browser;
+    }
+
+    public boolean isBot(){
+        return (useragent.toString().contains("bot"));
     }
 
 
