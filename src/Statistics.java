@@ -8,7 +8,9 @@ public class Statistics {
     LocalDateTime minTime;
     LocalDateTime maxTime;
     private static HashSet<String> pages = new HashSet<>();
+    private static HashSet<String> unavailablePages = new HashSet<>();
     private static HashMap<String, Integer> osStatistic = new HashMap<>();
+    private static HashMap<String, Integer> browserStatistic = new HashMap<>();
 
     public Statistics() {
         this.totalTraffic = 0;
@@ -21,9 +23,14 @@ public class Statistics {
         if (logEntry.getTime().isAfter(this.maxTime)) this.maxTime = logEntry.getTime();
         this.totalTraffic += logEntry.getResponseSize();
         if (logEntry.getResponseCode() == 200) pages.add(logEntry.getPath());
+        if (logEntry.getResponseCode() == 404) unavailablePages.add(logEntry.getPath());
         if (!(logEntry.getUserAgent().getOs() == null)){
             if (osStatistic.containsKey(logEntry.getUserAgent().getOs())) osStatistic.put(logEntry.getUserAgent().getOs(), osStatistic.get(logEntry.getUserAgent().getOs())+1);
             else osStatistic.put(logEntry.getUserAgent().getOs(), 1);
+        }
+        if (!(logEntry.getUserAgent().getBrowser() == null)){
+            if (browserStatistic.containsKey(logEntry.getUserAgent().getBrowser())) browserStatistic.put(logEntry.getUserAgent().getBrowser(), browserStatistic.get(logEntry.getUserAgent().getBrowser())+1);
+            else browserStatistic.put(logEntry.getUserAgent().getBrowser(), 1);
         }
     }
     public long getTrafficRate (){
@@ -34,7 +41,11 @@ public class Statistics {
         return pages;
     }
 
-    public HashMap<String, Double> osStatistics(){
+    public HashSet<String> getUnavailablePages() {
+        return unavailablePages;
+    }
+
+    public HashMap<String, Double> getOsStatistic(){
         double count = 0;
         HashMap<String, Double> h = new HashMap<>();
         for (Integer s : osStatistic.values()){
@@ -42,6 +53,18 @@ public class Statistics {
         }
         for (String s : osStatistic.keySet()){
             h.put(s, (double)osStatistic.get(s)/count);
+        }
+        return h;
+    }
+
+    public HashMap<String, Double> getBrowserStatistic(){
+        double count = 0;
+        HashMap<String, Double> h = new HashMap<>();
+        for (Integer s : browserStatistic.values()){
+            count += s;
+        }
+        for (String s : browserStatistic.keySet()){
+            h.put(s, (double)browserStatistic.get(s)/count);
         }
         return h;
     }
