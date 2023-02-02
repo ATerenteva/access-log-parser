@@ -1,17 +1,21 @@
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Statistics {
     long totalTraffic;
     private LocalDateTime minTime;
     private LocalDateTime maxTime;
-    private static HashSet<String> pages = new HashSet<>();
-    private static HashSet<String> unavailablePages = new HashSet<>();
-    HashSet<String> ip = new HashSet<>();
-    private static HashMap<String, Integer> osStatistic = new HashMap<>();
-    private static HashMap<String, Integer> browserStatistic = new HashMap<>();
+    private HashSet<String> pages = new HashSet<>();
+    private HashSet<String> unavailablePages = new HashSet<>();
+    private HashSet<String> ip = new HashSet<>();
+    private HashSet<String> domains = new HashSet<>();
+    private HashMap<String, Integer> osStatistic = new HashMap<>();
+    private HashMap<String, Integer> browserStatistic = new HashMap<>();
+    private HashMap<LocalDateTime, Integer> visitsPerSecond = new HashMap<>();
+    private HashMap<String, Integer> visitsPerIp = new HashMap<>();
     private int numberOfVisits;
     private int numberOfFails;
     private int numberOfUsers;
@@ -53,6 +57,23 @@ public class Statistics {
         if(!logEntry.getUserAgent().isBot()) {
             ip.add(logEntry.getIpAddr());
             numberOfUsers+=1;
+            if(!(logEntry.getIpAddr()==null)) {
+                if (visitsPerIp.containsKey(logEntry.getIpAddr()))
+                    visitsPerIp.put(logEntry.getIpAddr(), visitsPerIp.get(logEntry.getIpAddr()) + 1);
+                else visitsPerIp.put(logEntry.getIpAddr(), 1);
+            }
+        }
+
+        if(!logEntry.getUserAgent().isBot()){
+            if (visitsPerSecond.containsKey(logEntry.getTime()))
+                visitsPerSecond.put(logEntry.getTime(), visitsPerSecond.get(logEntry.getTime()) + 1);
+            else visitsPerSecond.put(logEntry.getTime(), 1);
+        }
+
+        Pattern browserP = Pattern.compile("http[s]{0,1}\\:\\/\\/[w]{0,3}\\.([^\\/]+)");
+        Matcher browserM = browserP.matcher(logEntry.getReferer());
+        if (browserM.find()&&!(browserM.group(1).equals("-"))) {
+            domains.add(browserM.group(1));
         }
     }
 
@@ -102,5 +123,17 @@ public class Statistics {
 
     public double visitsPerUser(){
         return (double)(numberOfUsers/ ip.size())/((double) ChronoUnit.MINUTES.between(this.minTime, this.maxTime) / 60);
+    }
+
+    public int getPeakVisits(){
+        return Collections.max(visitsPerSecond.entrySet(), Comparator.comparingInt(Map.Entry::getValue)).getValue();
+    }
+
+    public HashSet<String> getDomains(){
+        return domains;
+    }
+
+    public int getPeakVisitsOfUsers(){
+        return Collections.max(visitsPerIp.entrySet(), Comparator.comparingInt(Map.Entry::getValue)).getValue();
     }
 }
